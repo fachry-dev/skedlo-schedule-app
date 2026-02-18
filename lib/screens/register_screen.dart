@@ -104,9 +104,9 @@ class _RegisterScreenState extends State<RegisterScreen> {
 
                                 try {
                                   await context.read<AuthProvider>().signUp(
-                                    email: email,
-                                    password: password,
-                                    name: name,
+                                    email: _emailController.text.trim(),
+                                    password: _passwordController.text.trim(),
+                                    name: _nameController.text.trim(),
                                   );
 
                                   if (mounted) {
