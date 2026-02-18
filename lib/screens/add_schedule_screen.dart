@@ -38,8 +38,8 @@ class _AddScheduleScreenState extends State<AddScheduleScreen> {
         return Theme(
           data: Theme.of(context).copyWith(
             colorScheme: Theme.of(context).colorScheme.copyWith(
-              primary: const Color(0xFFFFD33C), // Yellow header
-              onPrimary: const Color(0xFF1E1E2D), // Black text
+              primary: const Color(0xFFFFD33C),
+              onPrimary: const Color(0xFF1E1E2D),
               surface: Colors.white,
             ),
           ),
@@ -62,8 +62,8 @@ class _AddScheduleScreenState extends State<AddScheduleScreen> {
         return Theme(
           data: Theme.of(context).copyWith(
             colorScheme: Theme.of(context).colorScheme.copyWith(
-              primary: const Color(0xFFFFD33C), // Yellow dial
-              onPrimary: const Color(0xFF1E1E2D), // Black text
+              primary: const Color(0xFFFFD33C), 
+              onPrimary: const Color(0xFF1E1E2D), 
               surface: Colors.white,
             ),
           ),

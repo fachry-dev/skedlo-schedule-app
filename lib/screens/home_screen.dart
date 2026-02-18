@@ -7,7 +7,6 @@ import '../providers/auth_provider.dart';
 import '../models/schedule_model.dart';
 import 'add_schedule_screen.dart';
 import 'schedule_detail_screen.dart';
-import 'login_screen.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -17,14 +16,16 @@ class HomeScreen extends StatefulWidget {
 }
 
 class _HomeScreenState extends State<HomeScreen> {
-  // Selection mode state
   bool _isSelectionMode = false;
   final Set<String> _selectedScheduleIds = {};
+
+  final Color darkGreen = const Color(0xFF2D503C);
+  final Color sageGreen = const Color(0xFFCAD7CD);
+  final Color lightBg = const Color(0xFFE0E9E1);
 
   @override
   void initState() {
     super.initState();
-    // Fetch schedules when screen initializes
     WidgetsBinding.instance.addPostFrameCallback((_) {
       final authProvider = Provider.of<AuthProvider>(context, listen: false);
       final userId =
@@ -44,9 +45,7 @@ class _HomeScreenState extends State<HomeScreen> {
       if (_isSelectionMode) {
         if (_selectedScheduleIds.contains(scheduleId)) {
           _selectedScheduleIds.remove(scheduleId);
-          if (_selectedScheduleIds.isEmpty) {
-            _isSelectionMode = false;
-          }
+          if (_selectedScheduleIds.isEmpty) _isSelectionMode = false;
         } else {
           _selectedScheduleIds.add(scheduleId);
         }
@@ -57,114 +56,42 @@ class _HomeScreenState extends State<HomeScreen> {
     });
   }
 
-  Future<void> _deleteSelected() async {
-    final provider = Provider.of<ScheduleProvider>(context, listen: false);
-
-    // Show confirmation dialog (optional, for safety)
-    final confirm = await showDialog<bool>(
-      context: context,
-      builder: (ctx) => AlertDialog(
-        title: const Text('Delete Selected?'),
-        content: Text(
-          'Are you sure you want to delete ${_selectedScheduleIds.length} items?',
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(ctx, false),
-            child: const Text('Cancel'),
-          ),
-          TextButton(
-            onPressed: () => Navigator.pop(ctx, true),
-            style: TextButton.styleFrom(foregroundColor: Colors.red),
-            child: const Text('Delete'),
-          ),
-        ],
-      ),
-    );
-
-    if (confirm == true) {
-      for (final id in _selectedScheduleIds) {
-        await provider.deleteSchedule(id);
-      }
-      setState(() {
-        _selectedScheduleIds.clear();
-        _isSelectionMode = false;
-      });
-      if (mounted) {
-        ScaffoldMessenger.of(
-          context,
-        ).showSnackBar(const SnackBar(content: Text('Schedules deleted')));
-      }
-    }
-  }
-
-  Future<void> _logout() async {
-    await Provider.of<AuthProvider>(context, listen: false).signOut();
-    if (mounted) {
-      Navigator.of(context).pushReplacement(
-        MaterialPageRoute(builder: (context) => const LoginScreen()),
-      );
-    }
-  }
-
   @override
   Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-    final colorScheme = theme.colorScheme;
-    final user =
-        Provider.of<AuthProvider>(context).user ??
-        FirebaseAuth.instance.currentUser;
-    final userName = user?.displayName ?? 'User';
-
-    // Filter logic for dashboard stats
+    final authProvider = Provider.of<AuthProvider>(context);
     final scheduleProvider = Provider.of<ScheduleProvider>(context);
-    final allSchedules = scheduleProvider.schedules;
-    final ongoingCount = allSchedules.where((s) => !s.isCompleted).length;
-    final completedCount = allSchedules.where((s) => s.isCompleted).length;
 
-    // Placeholder logic for "Pending" and "Cancel" as per design request/visuals
-    // In a real app, these might be specific status fields.
-    // For now, we'll map: Ongoing -> Not Completed, Completed -> Completed.
-    // We can keep Pending/Cancel as 0 or derive from other logic if we add it later.
-    final pendingCount = 0;
-    final cancelCount = 0;
+    final userName = authProvider.user?.displayName ?? 'User';
+    final allSchedules = scheduleProvider.schedules;
 
     return Scaffold(
-      backgroundColor: Colors
-          .grey[50], // Very light grey background for contrast with white cards
+      backgroundColor: sageGreen,
       appBar: AppBar(
+        backgroundColor: Colors.transparent,
+        elevation: 0,
         title: _isSelectionMode
-            ? Text('${_selectedScheduleIds.length} Selected')
-            : Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    'Hi, $userName',
-                    style: theme.textTheme.titleLarge?.copyWith(
-                      fontWeight: FontWeight.bold,
-                      fontSize: 20,
-                    ),
-                  ),
-                  Text(
-                    DateFormat('EEEE, d MMM y').format(DateTime.now()),
-                    style: theme.textTheme.bodySmall?.copyWith(
-                      color: Colors.grey[600],
-                    ),
-                  ),
-                ],
+            ? Text(
+                '${_selectedScheduleIds.length} terpilih',
+                style: TextStyle(color: darkGreen),
+              )
+            : Text(
+                'Hi, $userName!',
+                style: TextStyle(
+                  color: darkGreen,
+                  fontWeight: FontWeight.bold,
+                  fontSize: 24,
+                ),
               ),
         actions: [
           if (_isSelectionMode)
             IconButton(
-              icon: const Icon(Icons.delete_outline),
-              color: colorScheme.error,
-              onPressed: _deleteSelected,
+              icon: const Icon(Icons.delete_sweep, color: Colors.red),
+              onPressed: _confirmDelete,
             )
           else
             IconButton(
-              icon: const Icon(Icons.logout_rounded),
-              color: colorScheme.primary,
-              onPressed: _logout,
+              icon: Icon(Icons.logout, color: darkGreen),
+              onPressed: () => authProvider.signOut(),
             ),
         ],
       ),
@@ -172,347 +99,237 @@ class _HomeScreenState extends State<HomeScreen> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // Dashboard Row (Horizontal Scroll)
-            SingleChildScrollView(
-              scrollDirection: Axis.horizontal,
-              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
-              child: Row(
-                children: [
-                  _buildDashboardCard(
-                    context,
-                    title: 'Ongoing',
-                    count: ongoingCount.toString(),
-                    icon: Icons.sync,
-                    color: colorScheme.primary, // Black
-                    textColor: Colors.white,
-                    iconColor: colorScheme.secondary, // Yellow icon
-                  ),
-                  const SizedBox(width: 12),
-                  _buildDashboardCard(
-                    context,
-                    title: 'Pending',
-                    count: pendingCount.toString(),
-                    icon: Icons.timer_outlined,
-                    color: colorScheme.secondary, // Yellow
-                    textColor: colorScheme.primary, // Black text
-                    iconColor: colorScheme.primary,
-                  ),
-                  const SizedBox(width: 12),
-                  _buildDashboardCard(
-                    context,
-                    title: 'Completed',
-                    count: completedCount.toString(),
-                    icon: Icons.check_circle_outline,
-                    color: Colors.blue[50]!,
-                    textColor: Colors.blue[900]!,
-                    iconColor: Colors.blue[900]!,
-                  ),
-                  const SizedBox(width: 12),
-                  _buildDashboardCard(
-                    context,
-                    title: 'Canceled',
-                    count: cancelCount.toString(),
-                    icon: Icons.cancel_outlined,
-                    color: Colors.red[50]!,
-                    textColor: Colors.red[900]!,
-                    iconColor: Colors.red[900]!,
-                  ),
-                ],
-              ),
-            ),
-
-            // List Header
             Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  Text(
-                    'Recent Schedule',
-                    style: theme.textTheme.titleLarge?.copyWith(
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                  TextButton(
-                    onPressed: () {
-                      // Maybe navigate to a "View All" screen if list is limited
-                    },
-                    child: const Text('View All'),
-                  ),
-                ],
+              padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 10),
+              child: _buildWelcomeBanner(),
+            ),
+
+            const Padding(
+              padding: EdgeInsets.symmetric(horizontal: 24, vertical: 10),
+              child: Text(
+                'Recent Schedule',
+                style: TextStyle(
+                  fontSize: 18,
+                  fontWeight: FontWeight.bold,
+                  color: Color(0xFF2D503C),
+                ),
               ),
             ),
 
-            // Schedule List
             Expanded(
               child: scheduleProvider.isLoading
-                  ? const Center(child: CircularProgressIndicator())
+                  ? Center(child: CircularProgressIndicator(color: darkGreen))
                   : allSchedules.isEmpty
-                  ? Center(
-                      child: Column(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          Icon(
-                            Icons.event_note_outlined,
-                            size: 64,
-                            color: Colors.grey[300],
-                          ),
-                          const SizedBox(height: 16),
-                          Text(
-                            'No schedules yet',
-                            style: TextStyle(color: Colors.grey[500]),
-                          ),
-                        ],
-                      ),
-                    )
-                  : ListView.separated(
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 16,
-                        vertical: 8,
-                      ),
+                  ? _buildEmptyState()
+                  : ListView.builder(
+                      padding: const EdgeInsets.symmetric(horizontal: 24),
                       itemCount: allSchedules.length,
-                      separatorBuilder: (ctx, index) =>
-                          const SizedBox(height: 12),
                       itemBuilder: (context, index) {
                         final schedule = allSchedules[index];
                         final isSelected = _selectedScheduleIds.contains(
                           schedule.id,
                         );
-
-                        return _buildScheduleCard(
-                          context,
-                          schedule: schedule,
-                          isSelected: isSelected,
-                          onTap: () {
-                            if (_isSelectionMode) {
-                              _toggleSelectionMode(schedule.id);
-                            } else {
-                              Navigator.push(
-                                context,
-                                MaterialPageRoute(
-                                  builder: (context) =>
-                                      ScheduleDetailScreen(schedule: schedule),
-                                ),
-                              );
-                            }
-                          },
-                          onLongPress: () => _toggleSelectionMode(schedule.id),
-                          onToggleComplete: () {
-                            scheduleProvider.toggleCompletion(
-                              schedule.id,
-                              !schedule.isCompleted,
-                            );
-                          },
-                        );
+                        return _buildScheduleCard(schedule, isSelected);
                       },
                     ),
             ),
           ],
         ),
       ),
+
+      floatingActionButtonLocation: FloatingActionButtonLocation.centerDocked,
       floatingActionButton: FloatingActionButton(
-        onPressed: () {
+        onPressed: () => Navigator.push(
+          context,
+          MaterialPageRoute(builder: (context) => const AddScheduleScreen()),
+        ),
+        backgroundColor: darkGreen,
+        shape: const CircleBorder(),
+        child: const Icon(Icons.add, color: Colors.white, size: 30),
+      ),
+
+      bottomNavigationBar: BottomAppBar(
+        shape: const CircularNotchedRectangle(),
+        notchMargin: 8,
+        color: lightBg,
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.spaceAround,
+          children: [
+            _buildNavItem(Icons.home, 'Home', true),
+            _buildNavItem(Icons.calendar_month, 'Agenda', false),
+            const SizedBox(width: 40),
+            _buildNavItem(Icons.assignment, 'Task', false),
+            _buildNavItem(Icons.person, 'Profile', false),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildWelcomeBanner() {
+    return Container(
+      padding: const EdgeInsets.all(20),
+      decoration: BoxDecoration(
+        color: lightBg,
+        borderRadius: BorderRadius.circular(20),
+        border: Border.all(color: darkGreen, width: 1.5),
+      ),
+      child: Row(
+        children: [
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  'Welcome!',
+                  style: TextStyle(
+                    fontSize: 20,
+                    fontWeight: FontWeight.bold,
+                    color: darkGreen,
+                  ),
+                ),
+                Text(
+                  'Lets manage your time',
+                  style: TextStyle(color: darkGreen),
+                ),
+              ],
+            ),
+          ),
+          Icon(Icons.laptop_chromebook, size: 50, color: darkGreen),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildScheduleCard(Schedule schedule, bool isSelected) {
+    return GestureDetector(
+      onTap: () {
+        if (_isSelectionMode) {
+          _toggleSelectionMode(schedule.id);
+        } else {
           Navigator.push(
             context,
-            MaterialPageRoute(builder: (context) => const AddScheduleScreen()),
+            MaterialPageRoute(
+              builder: (context) => ScheduleDetailScreen(schedule: schedule),
+            ),
           );
-        },
-        backgroundColor: colorScheme.primary, // Black button
-        child: Icon(Icons.add, color: colorScheme.secondary), // Yellow icon
-      ),
-    );
-  }
-
-  Widget _buildDashboardCard(
-    BuildContext context, {
-    required String title,
-    required String count,
-    required IconData icon,
-    required Color color,
-    required Color textColor,
-    required Color iconColor,
-  }) {
-    return Container(
-      width: 140, // Fixed width for consistent look
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: color,
-        borderRadius: BorderRadius.circular(20),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.05),
-            offset: const Offset(0, 4),
-            blurRadius: 12,
-          ),
-        ],
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Container(
-            padding: const EdgeInsets.all(8),
-            decoration: BoxDecoration(
-              color: Colors.white.withOpacity(0.2), // Semi-transparent circle
-              shape: BoxShape.circle,
-            ),
-            child: Icon(icon, color: iconColor, size: 20),
-          ),
-          const SizedBox(height: 16),
-          Text(
-            title,
-            style: TextStyle(
-              color: textColor.withOpacity(0.7),
-              fontSize: 14,
-              fontWeight: FontWeight.w500,
-            ),
-          ),
-          const SizedBox(height: 4),
-          Text(
-            count,
-            style: TextStyle(
-              color: textColor,
-              fontSize: 24,
-              fontWeight: FontWeight.bold,
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildScheduleCard(
-    BuildContext context, {
-    required Schedule schedule,
-    required bool isSelected,
-    required VoidCallback onTap,
-    required VoidCallback onLongPress,
-    required VoidCallback onToggleComplete,
-  }) {
-    final theme = Theme.of(context);
-
-    return GestureDetector(
-      onTap: onTap,
-      onLongPress: onLongPress,
-      child: AnimatedContainer(
-        duration: const Duration(milliseconds: 200),
+        }
+      },
+      onLongPress: () => _toggleSelectionMode(schedule.id),
+      child: Container(
+        margin: const EdgeInsets.only(bottom: 12),
+        padding: const EdgeInsets.all(16),
         decoration: BoxDecoration(
-          color: isSelected
-              ? theme.colorScheme.primary.withOpacity(0.05)
-              : Colors.white,
-          borderRadius: BorderRadius.circular(16),
-          border: isSelected
-              ? Border.all(color: theme.colorScheme.primary, width: 2)
-              : Border.all(
-                  color: Colors.transparent,
-                  width: 2,
-                ), // Invisible border for layout stability
-          boxShadow: [
-            BoxShadow(
-              color: Colors.black.withOpacity(0.04), // Very subtle shadow
-              offset: const Offset(0, 4),
-              blurRadius: 16,
+          color: isSelected ? darkGreen.withOpacity(0.1) : Colors.white,
+          borderRadius: BorderRadius.circular(15),
+          border: isSelected ? Border.all(color: darkGreen, width: 2) : null,
+        ),
+        child: Row(
+          children: [
+            if (_isSelectionMode)
+              Checkbox(
+                value: isSelected,
+                onChanged: (_) => _toggleSelectionMode(schedule.id),
+                activeColor: darkGreen,
+              ),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    schedule.title,
+                    style: TextStyle(
+                      fontWeight: FontWeight.bold,
+                      fontSize: 16,
+                      color: darkGreen,
+                    ),
+                  ),
+                  Text(
+                    DateFormat('HH:mm').format(schedule.startTime),
+                    style: const TextStyle(color: Colors.grey),
+                  ),
+                ],
+              ),
+            ),
+            IconButton(
+              icon: Icon(
+                schedule.isCompleted
+                    ? Icons.check_circle
+                    : Icons.radio_button_unchecked,
+                color: schedule.isCompleted ? Colors.green : Colors.grey,
+              ),
+              onPressed: () {
+                Provider.of<ScheduleProvider>(
+                  context,
+                  listen: false,
+                ).toggleCompletion(schedule.id, !schedule.isCompleted);
+              },
             ),
           ],
         ),
-        child: Padding(
-          padding: const EdgeInsets.all(16),
-          child: Row(
-            children: [
-              // Selection or Status Indicator
-              if (_isSelectionMode)
-                Padding(
-                  padding: const EdgeInsets.only(right: 12),
-                  child: Checkbox(
-                    value: isSelected,
-                    onChanged: (val) => onTap(),
-                    activeColor: theme.colorScheme.primary,
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(4),
-                    ),
-                  ),
-                )
-              else
-                Padding(
-                  padding: const EdgeInsets.only(right: 12),
-                  child: Container(
-                    width: 4,
-                    height: 40,
-                    decoration: BoxDecoration(
-                      color: schedule.isCompleted
-                          ? Colors.green
-                          : theme.colorScheme.secondary, // Yellow for active
-                      borderRadius: BorderRadius.circular(2),
-                    ),
-                  ),
-                ),
-
-              // Content
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      schedule.title,
-                      style: theme.textTheme.titleMedium?.copyWith(
-                        fontWeight: FontWeight.bold,
-                        decoration: schedule.isCompleted
-                            ? TextDecoration.lineThrough
-                            : null,
-                        color: schedule.isCompleted
-                            ? Colors.grey
-                            : Colors.black87,
-                      ),
-                    ),
-                    const SizedBox(height: 4),
-                    Row(
-                      children: [
-                        Icon(
-                          Icons.access_time,
-                          size: 14,
-                          color: Colors.grey[500],
-                        ),
-                        const SizedBox(width: 4),
-                        Text(
-                          schedule.time,
-                          style: theme.textTheme.bodySmall?.copyWith(
-                            color: Colors.grey[600],
-                            fontWeight: FontWeight.w500,
-                          ),
-                        ),
-                        const SizedBox(width: 12),
-                        Icon(
-                          Icons.calendar_today,
-                          size: 14,
-                          color: Colors.grey[500],
-                        ),
-                        const SizedBox(width: 4),
-                        Text(
-                          DateFormat('d MMM').format(schedule.date),
-                          style: theme.textTheme.bodySmall?.copyWith(
-                            color: Colors.grey[600],
-                            fontWeight: FontWeight.w500,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ],
-                ),
-              ),
-
-              // Action (Complete Toggle)
-              IconButton(
-                icon: Icon(
-                  schedule.isCompleted
-                      ? Icons.check_circle
-                      : Icons.circle_outlined,
-                  color: schedule.isCompleted ? Colors.green : Colors.grey[400],
-                ),
-                onPressed: onToggleComplete,
-              ),
-            ],
-          ),
-        ),
       ),
     );
+  }
+
+  Widget _buildNavItem(IconData icon, String label, bool active) {
+    return Column(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        Icon(icon, color: active ? darkGreen : Colors.grey),
+        Text(
+          label,
+          style: TextStyle(
+            color: active ? darkGreen : Colors.grey,
+            fontSize: 12,
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildEmptyState() {
+    return Center(
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Icon(Icons.event_busy, size: 80, color: darkGreen.withOpacity(0.3)),
+          const SizedBox(height: 10),
+          Text('Belum ada jadwal', style: TextStyle(color: darkGreen)),
+        ],
+      ),
+    );
+  }
+
+  Future<void> _confirmDelete() async {
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: const Text('Hapus Jadwal?'),
+        content: Text(
+          'Anda akan menghapus ${_selectedScheduleIds.length} jadwal.',
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx, false),
+            child: const Text('Batal'),
+          ),
+          TextButton(
+            onPressed: () => Navigator.pop(ctx, true),
+            child: const Text('Hapus', style: TextStyle(color: Colors.red)),
+          ),
+        ],
+      ),
+    );
+
+    if (confirmed == true) {
+      final provider = Provider.of<ScheduleProvider>(context, listen: false);
+      for (var id in _selectedScheduleIds) {
+        await provider.deleteSchedule(id);
+      }
+      setState(() {
+        _selectedScheduleIds.clear();
+        _isSelectionMode = false;
+      });
+    }
   }
 }

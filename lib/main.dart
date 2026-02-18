@@ -4,10 +4,13 @@ import 'package:firebase_auth/firebase_auth.dart' hide AuthProvider;
 import 'firebase_options.dart';
 import 'package:provider/provider.dart';
 import 'package:intl/date_symbol_data_local.dart';
+
 import 'providers/schedule_provider.dart';
 import 'providers/auth_provider.dart';
+
 import 'screens/home_screen.dart';
 import 'screens/login_screen.dart';
+import 'splash/splash_screen.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -28,35 +31,15 @@ class MyApp extends StatelessWidget {
         ChangeNotifierProvider(create: (_) => ScheduleProvider()),
       ],
       child: MaterialApp(
-        title: 'Schedule App AI',
+        title: 'Skedlo - Schedule App AI',
+        debugShowCheckedModeBanner: false,
         theme: ThemeData(
-          scaffoldBackgroundColor: Colors.white,
-          colorScheme: const ColorScheme.light(
-            primary: Color(0xFF1E1E2D), // Black/Dark Blue
-            secondary: Color(0xFFFFD33C), // Yellow Accent
-            surface: Colors.white,
-            onPrimary: Colors.white,
-            onSecondary: Color(0xFF1E1E2D), // Black text on Yellow
-            error: Color(0xFFFF5252),
-          ),
           useMaterial3: true,
-          fontFamily: 'Roboto', // Or standard system font
-          appBarTheme: const AppBarTheme(
-            backgroundColor: Colors.white,
-            foregroundColor: Color(0xFF1E1E2D),
-            elevation: 0,
-            surfaceTintColor: Colors.transparent,
-          ),
-          elevatedButtonTheme: ElevatedButtonThemeData(
-            style: ElevatedButton.styleFrom(
-              backgroundColor: const Color(0xFFFFD33C),
-              foregroundColor: const Color(0xFF1E1E2D),
-              elevation: 0,
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(12),
-              ),
-              textStyle: const TextStyle(fontWeight: FontWeight.bold),
-            ),
+          fontFamily: 'Roboto',
+          colorScheme: ColorScheme.fromSeed(
+            seedColor: const Color(0xFF2D503C),
+            primary: const Color(0xFF2D503C),
+            secondary: const Color(0xFFCAD7CD),
           ),
           inputDecorationTheme: InputDecorationTheme(
             filled: true,
@@ -65,24 +48,9 @@ class MyApp extends StatelessWidget {
               borderRadius: BorderRadius.circular(12),
               borderSide: BorderSide.none,
             ),
-            enabledBorder: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(12),
-              borderSide: BorderSide.none,
-            ),
-            focusedBorder: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(12),
-              borderSide: const BorderSide(
-                color: Color(0xFF1E1E2D),
-                width: 1.5,
-              ),
-            ),
-            contentPadding: const EdgeInsets.symmetric(
-              horizontal: 16,
-              vertical: 16,
-            ),
           ),
         ),
-        home: const AuthWrapper(),
+        home: const SplashScreen(), 
       ),
     );
   }
@@ -96,12 +64,18 @@ class AuthWrapper extends StatelessWidget {
     return StreamBuilder<User?>(
       stream: FirebaseAuth.instance.authStateChanges(),
       builder: (context, snapshot) {
+        // Jika sedang loading mengecek status firebase
         if (snapshot.connectionState == ConnectionState.waiting) {
           return const Scaffold(
-            body: Center(child: CircularProgressIndicator()),
+            body: Center(
+              child: CircularProgressIndicator(
+                color: Color(0xFF2D503C),
+              ),
+            ),
           );
         }
 
+        // Jika user sudah login (data tidak null)
         if (snapshot.hasData && snapshot.data != null) {
           return const HomeScreen();
         }

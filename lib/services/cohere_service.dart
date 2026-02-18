@@ -3,10 +3,9 @@ import 'package:flutter/foundation.dart';
 import 'package:http/http.dart' as http;
 
 class CohereService {
-  // TODO: Replace with your actual API key
-  static const String _apiKey = 'g5ijXlDAGgrGPeHgvicV1rU5e7QdbgzlQEoaEvTb';
+  static const String _apiKey = '1WSMw9WufHsMTWTBDJvAjYSZIwIjX3sw0GuFVQBq';
   static const String _baseUrl =
-      'https://api.cohere.com/v2/chat'; // Updated to V2
+      'https://api.cohere.com/v2/chat';
 
   Future<List<String>> generateActivities(
     String title,
@@ -35,7 +34,7 @@ class CohereService {
               'X-Client-Name': 'FlutterScheduleApp',
             },
             body: jsonEncode({
-              'model': 'command-r-08-2024', // Use specific V2 model
+              'model': 'command-r-08-2024', 
               'messages': [
                 {'role': 'user', 'content': prompt},
               ],
@@ -45,7 +44,6 @@ class CohereService {
 
       if (response.statusCode == 200) {
         final data = jsonDecode(response.body);
-        // V2 response structure: message -> content -> [ { type: text, text: ... } ]
         final contentList = data['message']['content'] as List;
         final text = contentList.first['text'] as String;
 

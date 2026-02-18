@@ -34,7 +34,6 @@ class AuthProvider with ChangeNotifier {
     _setLoading(true);
     try {
       await _authService.signUp(email: email, password: password, name: name);
-      // Force refresh user to get the display name
       _user = _authService.currentUser;
       notifyListeners();
     } finally {
