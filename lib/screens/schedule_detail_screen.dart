@@ -4,10 +4,16 @@ import 'package:provider/provider.dart';
 import '../models/schedule_model.dart';
 import '../providers/schedule_provider.dart';
 
-class ScheduleDetailScreen extends StatelessWidget {
+class ScheduleDetailScreen extends StatefulWidget {
   final Schedule schedule;
-
   const ScheduleDetailScreen({super.key, required this.schedule});
+
+  @override
+  State<ScheduleDetailScreen> createState() => _ScheduleDetailScreenState();
+}
+
+class _ScheduleDetailScreenState extends State<ScheduleDetailScreen> {
+  final Map<int, bool> _activityStatus = {};
 
   void _deleteSchedule(BuildContext context) {
     showDialog(
@@ -25,9 +31,9 @@ class ScheduleDetailScreen extends StatelessWidget {
               Provider.of<ScheduleProvider>(
                 context,
                 listen: false,
-              ).deleteSchedule(schedule.id);
-              Navigator.pop(ctx); // Close dialog
-              Navigator.pop(context); // Go back to Home
+              ).deleteSchedule(widget.schedule.id);
+              Navigator.pop(ctx);
+              Navigator.pop(context);
             },
             style: TextButton.styleFrom(foregroundColor: Colors.red),
             child: const Text('Delete'),
@@ -39,19 +45,24 @@ class ScheduleDetailScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-    final colorScheme = theme.colorScheme;
+    final scheduleProvider = Provider.of<ScheduleProvider>(context);
+    final isDone = widget.schedule.isCompleted;
 
     return Scaffold(
-      backgroundColor: colorScheme.surface,
+      backgroundColor: const Color(0xFFF3F6F1),
       appBar: AppBar(
-        title: const Text(
-          'Task Details',
-          style: TextStyle(fontWeight: FontWeight.bold),
-        ),
+        backgroundColor: Colors.transparent,
+        elevation: 0,
         centerTitle: true,
+        title: const Text(
+          "Task Details",
+          style: TextStyle(
+            color: Color(0xFF2D503C),
+            fontWeight: FontWeight.bold,
+          ),
+        ),
         leading: IconButton(
-          icon: Icon(Icons.arrow_back, color: colorScheme.primary),
+          icon: const Icon(Icons.arrow_back, color: Color(0xFF2D503C)),
           onPressed: () => Navigator.pop(context),
         ),
         actions: [
@@ -61,173 +72,165 @@ class ScheduleDetailScreen extends StatelessWidget {
           ),
         ],
       ),
-      body: SafeArea(
-        child: SingleChildScrollView(
-          padding: const EdgeInsets.all(24),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              // Header Status
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  Container(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 12,
-                      vertical: 6,
-                    ),
-                    decoration: BoxDecoration(
-                      color: schedule.isCompleted
-                          ? Colors.green.withOpacity(0.1)
-                          : colorScheme.secondary.withOpacity(0.2),
-                      borderRadius: BorderRadius.circular(20),
-                    ),
-                    child: Text(
-                      schedule.isCompleted ? 'Completed' : 'Ongoing',
-                      style: TextStyle(
-                        color: schedule.isCompleted
-                            ? Colors.green[800]
-                            : Colors.brown[900],
-                        fontWeight: FontWeight.bold,
-                        fontSize: 12,
-                      ),
-                    ),
-                  ),
-                  Text(
-                    DateFormat('MMM dd, yyyy').format(schedule.date),
-                    style: TextStyle(
-                      color: Colors.grey[600],
-                      fontWeight: FontWeight.w500,
-                    ),
-                  ),
-                ],
-              ),
-              const SizedBox(height: 20),
-
-              // Title
-              Text(
-                schedule.title,
-                style: theme.textTheme.headlineSmall?.copyWith(
-                  fontWeight: FontWeight.w800,
-                  color: colorScheme.primary,
-                ),
-              ),
-              const SizedBox(height: 8),
-
-              // Time
-              Row(
-                children: [
-                  Icon(Icons.access_time, size: 16, color: Colors.grey[600]),
-                  const SizedBox(width: 8),
-                  Text(
-                    schedule.time,
-                    style: theme.textTheme.bodyLarge?.copyWith(
-                      color: Colors.grey[800],
-                      fontWeight: FontWeight.w500,
-                    ),
-                  ),
-                ],
-              ),
-              const SizedBox(height: 24),
-
-              // Description
-              if (schedule.description.isNotEmpty) ...[
-                Text(
-                  'Description',
-                  style: theme.textTheme.titleMedium?.copyWith(
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
-                const SizedBox(height: 8),
-                Text(
-                  schedule.description,
-                  style: theme.textTheme.bodyMedium?.copyWith(
-                    color: Colors.grey[800],
-                    height: 1.5,
-                  ),
-                ),
-                const SizedBox(height: 32),
-              ],
-
-              // Activities Section
-              Text(
-                'Generated Activities',
-                style: theme.textTheme.titleMedium?.copyWith(
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
-              const SizedBox(height: 16),
-
-              if (schedule.activities.isEmpty)
+      body: SingleChildScrollView(
+        padding: const EdgeInsets.all(24),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
                 Container(
-                  padding: const EdgeInsets.all(24),
-                  width: double.infinity,
-                  decoration: BoxDecoration(
-                    color: Colors.grey[50], // Very light background
-                    borderRadius: BorderRadius.circular(16),
-                    border: Border.all(color: Colors.grey[200]!),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 16,
+                    vertical: 8,
                   ),
-                  child: Column(
-                    children: [
-                      Icon(
-                        Icons.assignment_outlined,
-                        size: 48,
-                        color: Colors.grey[300],
-                      ),
-                      const SizedBox(height: 12),
-                      Text(
-                        'No activities generated yet.',
-                        style: TextStyle(color: Colors.grey[500]),
+                  decoration: BoxDecoration(
+                    color: isDone
+                        ? Colors.green.withOpacity(0.1)
+                        : const Color(0xFFE9F0E4),
+                    borderRadius: BorderRadius.circular(20),
+                  ),
+                  child: Text(
+                    isDone ? "Success" : "Ongoing",
+                    style: TextStyle(
+                      color: isDone ? Colors.green : const Color(0xFF2D503C),
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                ),
+                Text(
+                  DateFormat('MMM dd, yyyy').format(widget.schedule.startTime),
+                  style: const TextStyle(
+                    color: Colors.grey,
+                    fontWeight: FontWeight.w500,
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 24),
+
+            Text(
+              widget.schedule.title,
+              style: const TextStyle(
+                fontSize: 28,
+                fontWeight: FontWeight.bold,
+                color: Color(0xFF2D503C),
+              ),
+            ),
+            const SizedBox(height: 8),
+            Row(
+              children: [
+                const Icon(Icons.access_time, size: 20, color: Colors.grey),
+                const SizedBox(width: 8),
+                Text(
+                  DateFormat('HH:mm').format(widget.schedule.startTime),
+                  style: const TextStyle(color: Colors.grey, fontSize: 16),
+                ),
+              ],
+            ),
+
+            const SizedBox(height: 32),
+            const Text(
+              "Description",
+              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+            ),
+            const SizedBox(height: 8),
+            Text(
+              widget.schedule.description ?? "No description provided.",
+              style: const TextStyle(color: Colors.black54, height: 1.5),
+            ),
+
+            const SizedBox(height: 32),
+            const Text(
+              "Generated Activities",
+              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+            ),
+            const SizedBox(height: 16),
+
+            if (widget.schedule.activities.isEmpty)
+              const Text(
+                "No activities generated.",
+                style: TextStyle(color: Colors.grey),
+              )
+            else
+              ...List.generate(widget.schedule.activities.length, (index) {
+                final activityMap = widget.schedule.activities[index];
+                final activityText = activityMap['content'] ?? '';
+                bool isCheck = _activityStatus[index] ?? false;
+
+                return Container(
+                  margin: const EdgeInsets.only(bottom: 12),
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.circular(15),
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.black.withOpacity(0.05),
+                        blurRadius: 10,
                       ),
                     ],
                   ),
-                )
-              else
-                ListView.separated(
-                  physics: const NeverScrollableScrollPhysics(),
-                  shrinkWrap: true,
-                  itemCount: schedule.activities.length,
-                  separatorBuilder: (ctx, idx) => const SizedBox(height: 12),
-                  itemBuilder: (ctx, index) {
-                    final activity = schedule.activities[index];
-                    return Container(
-                      decoration: BoxDecoration(
-                        color: Colors.white,
-                        borderRadius: BorderRadius.circular(12),
-                        border: Border.all(color: Colors.grey[100]!),
-                        boxShadow: [
-                          BoxShadow(
-                            color: Colors.black.withOpacity(0.03),
-                            offset: const Offset(0, 2),
-                            blurRadius: 8,
-                          ),
-                        ],
+                  child: CheckboxListTile(
+                    value: isCheck,
+                    activeColor: const Color(0xFF2D503C),
+                    checkColor: Colors.white,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(15),
+                    ),
+                    title: Text(
+                      activityText,
+                      style: TextStyle(
+                        decoration: isCheck ? TextDecoration.lineThrough : null,
+                        color: isCheck ? Colors.grey : Colors.black87,
                       ),
-                      child: ListTile(
-                        leading: Container(
-                          padding: const EdgeInsets.all(8),
-                          decoration: BoxDecoration(
-                            color: colorScheme.secondary.withOpacity(0.2),
-                            shape: BoxShape.circle,
-                          ),
-                          child: Text(
-                            '${index + 1}',
-                            style: TextStyle(
-                              fontWeight: FontWeight.bold,
-                              color: colorScheme.onSecondary,
-                            ),
-                          ),
-                        ),
-                        title: Text(
-                          activity['content'] ?? '',
-                          style: const TextStyle(fontWeight: FontWeight.w500),
-                        ),
-                      ),
-                    );
-                  },
+                    ),
+                    onChanged: (val) {
+                      setState(() {
+                        _activityStatus[index] = val!;
+                      });
+                    },
+                    controlAffinity: ListTileControlAffinity.leading,
+                  ),
+                );
+              }),
+
+            const SizedBox(height: 40),
+
+            SizedBox(
+              width: double.infinity,
+              height: 55,
+              child: ElevatedButton(
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: isDone
+                      ? Colors.grey
+                      : const Color(0xFF2D503C),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(15),
+                  ),
+                  elevation: 0,
                 ),
-            ],
-          ),
+                onPressed: isDone
+                    ? null
+                    : () async {
+                        // Update status di Provider/Firebase
+                        await scheduleProvider.toggleCompletion(
+                          widget.schedule.id,
+                          true,
+                        );
+                        if (mounted) Navigator.pop(context);
+                      },
+                child: Text(
+                  isDone ? "Task Completed" : "Mark as Finished",
+                  style: const TextStyle(
+                    color: Colors.white,
+                    fontSize: 16,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+              ),
+            ),
+          ],
         ),
       ),
     );
