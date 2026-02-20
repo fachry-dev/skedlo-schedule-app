@@ -11,6 +11,7 @@ import 'providers/auth_provider.dart';
 import 'screens/home_screen.dart';
 import 'screens/login_screen.dart';
 import 'splash/splash_screen.dart';
+import 'screens/profile_screen.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -64,7 +65,6 @@ class AuthWrapper extends StatelessWidget {
     return StreamBuilder<User?>(
       stream: FirebaseAuth.instance.authStateChanges(),
       builder: (context, snapshot) {
-        // Jika sedang loading mengecek status firebase
         if (snapshot.connectionState == ConnectionState.waiting) {
           return const Scaffold(
             body: Center(
@@ -75,7 +75,7 @@ class AuthWrapper extends StatelessWidget {
           );
         }
 
-        // Jika user sudah login (data tidak null)
+
         if (snapshot.hasData && snapshot.data != null) {
           return const HomeScreen();
         }

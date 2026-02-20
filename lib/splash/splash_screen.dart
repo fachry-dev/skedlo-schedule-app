@@ -20,7 +20,7 @@ class _SplashScreenState extends State<SplashScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFFCAD7CD), // Warna latar sage
+      backgroundColor: const Color(0xFFCAD7CD), 
       body: Center(
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,

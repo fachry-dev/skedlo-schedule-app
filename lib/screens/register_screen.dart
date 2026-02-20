@@ -119,7 +119,6 @@ class _RegisterScreenState extends State<RegisterScreen> {
                                       ),
                                     );
 
-                                    // Masuk ke HomeScreen
                                     Navigator.pushReplacementNamed(
                                       context,
                                       '/home',

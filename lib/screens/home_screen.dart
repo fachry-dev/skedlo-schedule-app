@@ -28,14 +28,10 @@ class _HomeScreenState extends State<HomeScreen> {
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((_) {
       final authProvider = Provider.of<AuthProvider>(context, listen: false);
-      final userId =
-          authProvider.user?.uid ?? FirebaseAuth.instance.currentUser?.uid;
+      final userId = authProvider.user?.uid ?? FirebaseAuth.instance.currentUser?.uid;
 
       if (userId != null) {
-        Provider.of<ScheduleProvider>(
-          context,
-          listen: false,
-        ).fetchSchedules(userId);
+        Provider.of<ScheduleProvider>(context, listen: false).fetchSchedules(userId);
       }
     });
   }
@@ -70,17 +66,10 @@ class _HomeScreenState extends State<HomeScreen> {
         backgroundColor: Colors.transparent,
         elevation: 0,
         title: _isSelectionMode
-            ? Text(
-                '${_selectedScheduleIds.length} terpilih',
-                style: TextStyle(color: darkGreen),
-              )
+            ? Text('${_selectedScheduleIds.length} terpilih', style: TextStyle(color: darkGreen))
             : Text(
                 'Hi, $userName!',
-                style: TextStyle(
-                  color: darkGreen,
-                  fontWeight: FontWeight.bold,
-                  fontSize: 24,
-                ),
+                style: TextStyle(color: darkGreen, fontWeight: FontWeight.bold, fontSize: 24),
               ),
         actions: [
           if (_isSelectionMode)
@@ -103,10 +92,11 @@ class _HomeScreenState extends State<HomeScreen> {
               padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 10),
               child: _buildWelcomeBanner(),
             ),
-            _buildCategoryGrid(),
             
+            // --- BAGIAN KATEGORI TELAH DIHAPUS ---
+
             const Padding(
-              padding: EdgeInsets.symmetric(horizontal: 24, vertical: 10),
+              padding: EdgeInsets.symmetric(horizontal: 24, vertical: 20),
               child: Text(
                 'Recent Schedule',
                 style: TextStyle(
@@ -121,23 +111,20 @@ class _HomeScreenState extends State<HomeScreen> {
               child: scheduleProvider.isLoading
                   ? Center(child: CircularProgressIndicator(color: darkGreen))
                   : allSchedules.isEmpty
-                  ? _buildEmptyState()
-                  : ListView.builder(
-                      padding: const EdgeInsets.symmetric(horizontal: 24),
-                      itemCount: allSchedules.length,
-                      itemBuilder: (context, index) {
-                        final schedule = allSchedules[index];
-                        final isSelected = _selectedScheduleIds.contains(
-                          schedule.id,
-                        );
-                        return _buildScheduleCard(schedule, isSelected);
-                      },
-                    ),
+                      ? _buildEmptyState()
+                      : ListView.builder(
+                          padding: const EdgeInsets.symmetric(horizontal: 24),
+                          itemCount: allSchedules.length,
+                          itemBuilder: (context, index) {
+                            final schedule = allSchedules[index];
+                            final isSelected = _selectedScheduleIds.contains(schedule.id);
+                            return _buildScheduleCard(schedule, isSelected);
+                          },
+                        ),
             ),
           ],
         ),
       ),
-
       floatingActionButtonLocation: FloatingActionButtonLocation.centerDocked,
       floatingActionButton: FloatingActionButton(
         onPressed: () => Navigator.push(
@@ -148,7 +135,6 @@ class _HomeScreenState extends State<HomeScreen> {
         shape: const CircleBorder(),
         child: const Icon(Icons.add, color: Colors.white, size: 30),
       ),
-
       bottomNavigationBar: BottomAppBar(
         shape: const CircularNotchedRectangle(),
         notchMargin: 8,
@@ -167,57 +153,7 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
-  // Masukkan ke dalam body Column di HomeScreen
-  Widget _buildCategoryGrid() {
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 24),
-      child: GridView.count(
-        shrinkWrap: true,
-        physics: const NeverScrollableScrollPhysics(),
-        crossAxisCount: 2,
-        crossAxisSpacing: 16,
-        mainAxisSpacing: 16,
-        children: [
-          _buildCategoryCard('Project', Icons.computer, true), // Dark Card
-          _buildCategoryCard(
-            'Exercise',
-            Icons.fitness_center,
-            false,
-          ), // Light Card
-          _buildCategoryCard('Learning', Icons.menu_book, false),
-          _buildCategoryCard('Rest', Icons.bedtime, false),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildCategoryCard(String title, IconData icon, bool isDark) {
-    return Container(
-      decoration: BoxDecoration(
-        color: isDark ? const Color(0xFF2D503C) : Colors.white.withOpacity(0.5),
-        borderRadius: BorderRadius.circular(20),
-      ),
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          Icon(
-            icon,
-            size: 50,
-            color: isDark ? Colors.white : const Color(0xFF2D503C),
-          ),
-          const SizedBox(height: 10),
-          Text(
-            title,
-            style: TextStyle(
-              color: isDark ? Colors.white : const Color(0xFF2D503C),
-              fontWeight: FontWeight.bold,
-              fontSize: 16,
-            ),
-          ),
-        ],
-      ),
-    );
-  }
+  // --- WIDGET HELPER ---
 
   Widget _buildWelcomeBanner() {
     return Container(
@@ -235,16 +171,9 @@ class _HomeScreenState extends State<HomeScreen> {
               children: [
                 Text(
                   'Welcome!',
-                  style: TextStyle(
-                    fontSize: 20,
-                    fontWeight: FontWeight.bold,
-                    color: darkGreen,
-                  ),
+                  style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: darkGreen),
                 ),
-                Text(
-                  'Lets manage your time',
-                  style: TextStyle(color: darkGreen),
-                ),
+                Text('Lets manage your time', style: TextStyle(color: darkGreen)),
               ],
             ),
           ),
@@ -262,9 +191,7 @@ class _HomeScreenState extends State<HomeScreen> {
         } else {
           Navigator.push(
             context,
-            MaterialPageRoute(
-              builder: (context) => ScheduleDetailScreen(schedule: schedule),
-            ),
+            MaterialPageRoute(builder: (context) => ScheduleDetailScreen(schedule: schedule)),
           );
         }
       },
@@ -291,11 +218,7 @@ class _HomeScreenState extends State<HomeScreen> {
                 children: [
                   Text(
                     schedule.title,
-                    style: TextStyle(
-                      fontWeight: FontWeight.bold,
-                      fontSize: 16,
-                      color: darkGreen,
-                    ),
+                    style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16, color: darkGreen),
                   ),
                   Text(
                     DateFormat('HH:mm').format(schedule.startTime),
@@ -306,16 +229,12 @@ class _HomeScreenState extends State<HomeScreen> {
             ),
             IconButton(
               icon: Icon(
-                schedule.isCompleted
-                    ? Icons.check_circle
-                    : Icons.radio_button_unchecked,
+                schedule.isCompleted ? Icons.check_circle : Icons.radio_button_unchecked,
                 color: schedule.isCompleted ? Colors.green : Colors.grey,
               ),
               onPressed: () {
-                Provider.of<ScheduleProvider>(
-                  context,
-                  listen: false,
-                ).toggleCompletion(schedule.id, !schedule.isCompleted);
+                Provider.of<ScheduleProvider>(context, listen: false)
+                    .toggleCompletion(schedule.id, !schedule.isCompleted);
               },
             ),
           ],
@@ -329,13 +248,7 @@ class _HomeScreenState extends State<HomeScreen> {
       mainAxisSize: MainAxisSize.min,
       children: [
         Icon(icon, color: active ? darkGreen : Colors.grey),
-        Text(
-          label,
-          style: TextStyle(
-            color: active ? darkGreen : Colors.grey,
-            fontSize: 12,
-          ),
-        ),
+        Text(label, style: TextStyle(color: active ? darkGreen : Colors.grey, fontSize: 12)),
       ],
     );
   }
@@ -358,14 +271,9 @@ class _HomeScreenState extends State<HomeScreen> {
       context: context,
       builder: (ctx) => AlertDialog(
         title: const Text('Hapus Jadwal?'),
-        content: Text(
-          'Anda akan menghapus ${_selectedScheduleIds.length} jadwal.',
-        ),
+        content: Text('Anda akan menghapus ${_selectedScheduleIds.length} jadwal.'),
         actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(ctx, false),
-            child: const Text('Batal'),
-          ),
+          TextButton(onPressed: () => Navigator.pop(ctx, false), child: const Text('Batal')),
           TextButton(
             onPressed: () => Navigator.pop(ctx, true),
             child: const Text('Hapus', style: TextStyle(color: Colors.red)),

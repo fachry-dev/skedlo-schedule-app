@@ -11,7 +11,6 @@ class ProfileScreen extends StatelessWidget {
     final authProvider = Provider.of<AuthProvider>(context);
     final scheduleProvider = Provider.of<ScheduleProvider>(context);
 
-    // Menghitung Progres
     final totalTasks = scheduleProvider.schedules.length;
     final completedTasks = scheduleProvider.schedules
         .where((s) => s.isCompleted)
@@ -22,7 +21,6 @@ class ProfileScreen extends StatelessWidget {
       backgroundColor: const Color(0xFFCAD7CD),
       body: Column(
         children: [
-          // Header Profile
           Container(
             height: 350,
             width: double.infinity,
