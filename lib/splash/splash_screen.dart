@@ -1,6 +1,5 @@
-import 'dart:async';
+// import 'dart:async';
 import 'package:flutter/material.dart';
-// import '../screens/login_screen.dart';
 import 'spalsh_screen_controller.dart';
 
 class SplashScreen extends StatefulWidget {
@@ -29,8 +28,9 @@ class _SplashScreenState extends State<SplashScreen> {
               'skedlo',
               style: TextStyle(
                 fontSize: 64,
+                fontFamily: 'Outfit', 
                 fontWeight: FontWeight.bold,
-                color: const Color(0xFF2D503C), // Hijau tua
+                color: const Color(0xFF2D503C),
                 letterSpacing: -2,
               ),
             ),
@@ -38,9 +38,8 @@ class _SplashScreenState extends State<SplashScreen> {
               'schedule app',
               style: TextStyle(
                 fontSize: 20,
+                fontFamily: 'Petemoss',
                 fontStyle: FontStyle.italic,
-                fontFamily:
-                    'Cursive', // Pastikan font ini tersedia atau gunakan GoogleFonts
                 color: const Color(0xFF2D503C),
               ),
             ),

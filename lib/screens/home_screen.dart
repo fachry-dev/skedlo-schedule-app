@@ -7,6 +7,7 @@ import '../providers/auth_provider.dart';
 import '../models/schedule_model.dart';
 import 'add_schedule_screen.dart';
 import 'schedule_detail_screen.dart';
+import 'profile_screen.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -28,10 +29,14 @@ class _HomeScreenState extends State<HomeScreen> {
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((_) {
       final authProvider = Provider.of<AuthProvider>(context, listen: false);
-      final userId = authProvider.user?.uid ?? FirebaseAuth.instance.currentUser?.uid;
+      final userId =
+          authProvider.user?.uid ?? FirebaseAuth.instance.currentUser?.uid;
 
       if (userId != null) {
-        Provider.of<ScheduleProvider>(context, listen: false).fetchSchedules(userId);
+        Provider.of<ScheduleProvider>(
+          context,
+          listen: false,
+        ).fetchSchedules(userId);
       }
     });
   }
@@ -66,10 +71,17 @@ class _HomeScreenState extends State<HomeScreen> {
         backgroundColor: Colors.transparent,
         elevation: 0,
         title: _isSelectionMode
-            ? Text('${_selectedScheduleIds.length} terpilih', style: TextStyle(color: darkGreen))
+            ? Text(
+                '${_selectedScheduleIds.length} terpilih',
+                style: TextStyle(color: darkGreen),
+              )
             : Text(
                 'Hi, $userName!',
-                style: TextStyle(color: darkGreen, fontWeight: FontWeight.bold, fontSize: 24),
+                style: TextStyle(
+                  color: darkGreen,
+                  fontWeight: FontWeight.bold,
+                  fontSize: 24,
+                ),
               ),
         actions: [
           if (_isSelectionMode)
@@ -92,9 +104,6 @@ class _HomeScreenState extends State<HomeScreen> {
               padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 10),
               child: _buildWelcomeBanner(),
             ),
-            
-            // --- BAGIAN KATEGORI TELAH DIHAPUS ---
-
             const Padding(
               padding: EdgeInsets.symmetric(horizontal: 24, vertical: 20),
               child: Text(
@@ -106,21 +115,29 @@ class _HomeScreenState extends State<HomeScreen> {
                 ),
               ),
             ),
-
             Expanded(
               child: scheduleProvider.isLoading
                   ? Center(child: CircularProgressIndicator(color: darkGreen))
                   : allSchedules.isEmpty
-                      ? _buildEmptyState()
-                      : ListView.builder(
-                          padding: const EdgeInsets.symmetric(horizontal: 24),
-                          itemCount: allSchedules.length,
-                          itemBuilder: (context, index) {
-                            final schedule = allSchedules[index];
-                            final isSelected = _selectedScheduleIds.contains(schedule.id);
-                            return _buildScheduleCard(schedule, isSelected);
-                          },
-                        ),
+                  ? _buildEmptyState()
+                  : ListView.builder(
+                      padding: const EdgeInsets.symmetric(horizontal: 24),
+                      itemCount: allSchedules.length,
+                      itemBuilder: (context, index) {
+                        final schedule = allSchedules[index];
+                        final isSelected = _selectedScheduleIds.contains(
+                          schedule.id,
+                        );
+
+                        bool isLast = index == allSchedules.length - 1;
+
+                        return _buildTimelineScheduleCard(
+                          schedule,
+                          isSelected,
+                          isLast,
+                        );
+                      },
+                    ),
             ),
           ],
         ),
@@ -142,18 +159,148 @@ class _HomeScreenState extends State<HomeScreen> {
         child: Row(
           mainAxisAlignment: MainAxisAlignment.spaceAround,
           children: [
-            _buildNavItem(Icons.home, 'Home', true),
-            _buildNavItem(Icons.calendar_month, 'Agenda', false),
+            _buildNavItem(Icons.home, 'Home', true, () {}),
+            _buildNavItem(Icons.calendar_month, 'Agenda', false, () {}),
             const SizedBox(width: 40),
-            _buildNavItem(Icons.assignment, 'Task', false),
-            _buildNavItem(Icons.person, 'Profile', false),
+            _buildNavItem(Icons.assignment, 'Task', false, () {}),
+            _buildNavItem(Icons.person, 'Profile', false, () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (context) => const ProfileScreen()),
+              );
+            }),
           ],
         ),
       ),
     );
   }
 
-  // --- WIDGET HELPER ---
+  Widget _buildTimelineScheduleCard(
+    Schedule schedule,
+    bool isSelected,
+    bool isLast,
+  ) {
+    return IntrinsicHeight(
+      child: Row(
+        children: [
+          Column(
+            children: [
+              Container(
+                width: 20,
+                height: 20,
+                decoration: BoxDecoration(
+                  color: schedule.isCompleted ? darkGreen : Colors.white,
+                  shape: BoxShape.circle,
+                  border: Border.all(color: darkGreen, width: 2),
+                ),
+                child: schedule.isCompleted
+                    ? const Icon(Icons.check, size: 12, color: Colors.white)
+                    : null,
+              ),
+              if (!isLast)
+                Expanded(
+                  child: Container(width: 2, color: darkGreen.withOpacity(0.3)),
+                ),
+            ],
+          ),
+          const SizedBox(width: 16),
+          // Kolom Kanan: Card Konten
+          Expanded(
+            child: GestureDetector(
+              onTap: () {
+                if (_isSelectionMode) {
+                  _toggleSelectionMode(schedule.id);
+                } else {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) =>
+                          ScheduleDetailScreen(schedule: schedule),
+                    ),
+                  );
+                }
+              },
+              onLongPress: () => _toggleSelectionMode(schedule.id),
+              child: Container(
+                margin: const EdgeInsets.only(bottom: 20),
+                padding: const EdgeInsets.all(16),
+                decoration: BoxDecoration(
+                  color: isSelected ? darkGreen.withOpacity(0.1) : Colors.white,
+                  borderRadius: BorderRadius.circular(20),
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.black.withOpacity(0.05),
+                      blurRadius: 10,
+                      offset: const Offset(0, 4),
+                    ),
+                  ],
+                  border: isSelected
+                      ? Border.all(color: darkGreen, width: 2)
+                      : null,
+                ),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Text(
+                          DateFormat('HH:mm').format(schedule.startTime),
+                          style: TextStyle(
+                            color: darkGreen.withOpacity(0.6),
+                            fontSize: 12,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                        Container(
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 10,
+                            vertical: 4,
+                          ),
+                          decoration: BoxDecoration(
+                            color: schedule.isCompleted
+                                ? Colors.green.withOpacity(0.1)
+                                : Colors.orange.withOpacity(0.1),
+                            borderRadius: BorderRadius.circular(20),
+                          ),
+                          child: Text(
+                            schedule.isCompleted ? "Done" : "Upcoming",
+                            style: TextStyle(
+                              color: schedule.isCompleted
+                                  ? Colors.green
+                                  : Colors.orange,
+                              fontSize: 10,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 8),
+                    Text(
+                      schedule.title,
+                      style: TextStyle(
+                        fontWeight: FontWeight.bold,
+                        fontSize: 16,
+                        color: darkGreen,
+                      ),
+                    ),
+                    const SizedBox(height: 4),
+                    Text(
+                      schedule.description ?? "No description",
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: const TextStyle(color: Colors.grey, fontSize: 12),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
 
   Widget _buildWelcomeBanner() {
     return Container(
@@ -171,9 +318,16 @@ class _HomeScreenState extends State<HomeScreen> {
               children: [
                 Text(
                   'Welcome!',
-                  style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: darkGreen),
+                  style: TextStyle(
+                    fontSize: 20,
+                    fontWeight: FontWeight.bold,
+                    color: darkGreen,
+                  ),
                 ),
-                Text('Lets manage your time', style: TextStyle(color: darkGreen)),
+                Text(
+                  'Lets manage your time',
+                  style: TextStyle(color: darkGreen),
+                ),
               ],
             ),
           ),
@@ -183,73 +337,27 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
-  Widget _buildScheduleCard(Schedule schedule, bool isSelected) {
-    return GestureDetector(
-      onTap: () {
-        if (_isSelectionMode) {
-          _toggleSelectionMode(schedule.id);
-        } else {
-          Navigator.push(
-            context,
-            MaterialPageRoute(builder: (context) => ScheduleDetailScreen(schedule: schedule)),
-          );
-        }
-      },
-      onLongPress: () => _toggleSelectionMode(schedule.id),
-      child: Container(
-        margin: const EdgeInsets.only(bottom: 12),
-        padding: const EdgeInsets.all(16),
-        decoration: BoxDecoration(
-          color: isSelected ? darkGreen.withOpacity(0.1) : Colors.white,
-          borderRadius: BorderRadius.circular(15),
-          border: isSelected ? Border.all(color: darkGreen, width: 2) : null,
-        ),
-        child: Row(
-          children: [
-            if (_isSelectionMode)
-              Checkbox(
-                value: isSelected,
-                onChanged: (_) => _toggleSelectionMode(schedule.id),
-                activeColor: darkGreen,
-              ),
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    schedule.title,
-                    style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16, color: darkGreen),
-                  ),
-                  Text(
-                    DateFormat('HH:mm').format(schedule.startTime),
-                    style: const TextStyle(color: Colors.grey),
-                  ),
-                ],
-              ),
+  Widget _buildNavItem(
+    IconData icon,
+    String label,
+    bool active,
+    VoidCallback? onTap,
+  ) {
+    return InkWell(
+      onTap: onTap,
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(icon, color: active ? darkGreen : Colors.grey),
+          Text(
+            label,
+            style: TextStyle(
+              color: active ? darkGreen : Colors.grey,
+              fontSize: 12,
             ),
-            IconButton(
-              icon: Icon(
-                schedule.isCompleted ? Icons.check_circle : Icons.radio_button_unchecked,
-                color: schedule.isCompleted ? Colors.green : Colors.grey,
-              ),
-              onPressed: () {
-                Provider.of<ScheduleProvider>(context, listen: false)
-                    .toggleCompletion(schedule.id, !schedule.isCompleted);
-              },
-            ),
-          ],
-        ),
+          ),
+        ],
       ),
-    );
-  }
-
-  Widget _buildNavItem(IconData icon, String label, bool active) {
-    return Column(
-      mainAxisSize: MainAxisSize.min,
-      children: [
-        Icon(icon, color: active ? darkGreen : Colors.grey),
-        Text(label, style: TextStyle(color: active ? darkGreen : Colors.grey, fontSize: 12)),
-      ],
     );
   }
 
@@ -271,9 +379,14 @@ class _HomeScreenState extends State<HomeScreen> {
       context: context,
       builder: (ctx) => AlertDialog(
         title: const Text('Hapus Jadwal?'),
-        content: Text('Anda akan menghapus ${_selectedScheduleIds.length} jadwal.'),
+        content: Text(
+          'Anda akan menghapus ${_selectedScheduleIds.length} jadwal.',
+        ),
         actions: [
-          TextButton(onPressed: () => Navigator.pop(ctx, false), child: const Text('Batal')),
+          TextButton(
+            onPressed: () => Navigator.pop(ctx, false),
+            child: const Text('Batal'),
+          ),
           TextButton(
             onPressed: () => Navigator.pop(ctx, true),
             child: const Text('Hapus', style: TextStyle(color: Colors.red)),

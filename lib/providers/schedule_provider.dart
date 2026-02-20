@@ -40,7 +40,7 @@ class ScheduleProvider with ChangeNotifier {
   Future<void> addSchedule(
     String title,
     DateTime date,
-    TimeOfDay time, // Changed from String timeStr
+    TimeOfDay time,
     String description,
     String userId,
     List<String> activities,
@@ -52,9 +52,7 @@ class ScheduleProvider with ChangeNotifier {
       time.hour,
       time.minute,
     );
-    final endTime = startTime.add(const Duration(hours: 1)); // Default duration
-
-    // Convert List<String> activities to List<Map>
+    final endTime = startTime.add(const Duration(hours: 1));
     final activityMaps = activities
         .map((a) => {'content': a, 'isCompleted': false})
         .toList();
@@ -135,7 +133,6 @@ class ScheduleProvider with ChangeNotifier {
       await _firebaseService.updateSchedule(updatedSchedule);
     } catch (e) {
       debugPrint("Error toggling completion: $e");
-      // Revert if needed, but stream should handle it
     }
   }
 

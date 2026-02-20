@@ -62,8 +62,8 @@ class _AddScheduleScreenState extends State<AddScheduleScreen> {
         return Theme(
           data: Theme.of(context).copyWith(
             colorScheme: Theme.of(context).colorScheme.copyWith(
-              primary: const Color(0xFFFFD33C), 
-              onPrimary: const Color(0xFF1E1E2D), 
+              primary: const Color(0xFFFFD33C),
+              onPrimary: const Color(0xFF1E1E2D),
               surface: Colors.white,
             ),
           ),
@@ -113,7 +113,7 @@ class _AddScheduleScreenState extends State<AddScheduleScreen> {
         await Provider.of<ScheduleProvider>(context, listen: false).addSchedule(
           _titleController.text,
           _selectedDate,
-          _selectedTime, // Pass TimeOfDay directly
+          _selectedTime,
           _descriptionController.text,
           userId,
           activities,
@@ -152,7 +152,6 @@ class _AddScheduleScreenState extends State<AddScheduleScreen> {
           onPressed: () => Navigator.pop(context),
         ),
         actions: [
-          // Save Text Button
           TextButton(
             onPressed: _isLoading ? null : _saveSchedule,
             child: _isLoading
@@ -167,7 +166,7 @@ class _AddScheduleScreenState extends State<AddScheduleScreen> {
                 : Text(
                     'Save',
                     style: TextStyle(
-                      color: colorScheme.secondary, // Yellow
+                      color: colorScheme.secondary,
                       fontWeight: FontWeight.bold,
                       fontSize: 16,
                     ),
@@ -183,7 +182,6 @@ class _AddScheduleScreenState extends State<AddScheduleScreen> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
-                // Title Input
                 Text(
                   'Title',
                   style: theme.textTheme.titleMedium?.copyWith(
@@ -202,8 +200,6 @@ class _AddScheduleScreenState extends State<AddScheduleScreen> {
                       : 'Please enter a title',
                 ),
                 const SizedBox(height: 24),
-
-                // Date & Time Row
                 Row(
                   children: [
                     Expanded(
@@ -273,9 +269,7 @@ class _AddScheduleScreenState extends State<AddScheduleScreen> {
                                 horizontal: 12,
                               ),
                               decoration: BoxDecoration(
-                                color: theme
-                                    .inputDecorationTheme
-                                    .fillColor, // From theme
+                                color: theme.inputDecorationTheme.fillColor,
                                 borderRadius: BorderRadius.circular(12),
                               ),
                               child: Row(
@@ -301,8 +295,6 @@ class _AddScheduleScreenState extends State<AddScheduleScreen> {
                   ],
                 ),
                 const SizedBox(height: 24),
-
-                // Description Input
                 Text(
                   'Description',
                   style: theme.textTheme.titleMedium?.copyWith(
@@ -320,11 +312,10 @@ class _AddScheduleScreenState extends State<AddScheduleScreen> {
                 ),
                 const SizedBox(height: 32),
 
-                // AI Generated Notice
                 Container(
                   padding: const EdgeInsets.all(16),
                   decoration: BoxDecoration(
-                    color: const Color(0xFFFFF9C4), // Light Yellow
+                    color: const Color(0xFFFFF9C4),
                     borderRadius: BorderRadius.circular(12),
                     border: Border.all(color: const Color(0xFFFFD33C)),
                   ),
@@ -346,7 +337,6 @@ class _AddScheduleScreenState extends State<AddScheduleScreen> {
 
                 const SizedBox(height: 24),
 
-                // Main Save Button
                 SizedBox(
                   height: 56,
                   child: ElevatedButton(
