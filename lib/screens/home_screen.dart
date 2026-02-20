@@ -103,7 +103,8 @@ class _HomeScreenState extends State<HomeScreen> {
               padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 10),
               child: _buildWelcomeBanner(),
             ),
-
+            _buildCategoryGrid(),
+            
             const Padding(
               padding: EdgeInsets.symmetric(horizontal: 24, vertical: 10),
               child: Text(
@@ -162,6 +163,58 @@ class _HomeScreenState extends State<HomeScreen> {
             _buildNavItem(Icons.person, 'Profile', false),
           ],
         ),
+      ),
+    );
+  }
+
+  // Masukkan ke dalam body Column di HomeScreen
+  Widget _buildCategoryGrid() {
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 24),
+      child: GridView.count(
+        shrinkWrap: true,
+        physics: const NeverScrollableScrollPhysics(),
+        crossAxisCount: 2,
+        crossAxisSpacing: 16,
+        mainAxisSpacing: 16,
+        children: [
+          _buildCategoryCard('Project', Icons.computer, true), // Dark Card
+          _buildCategoryCard(
+            'Exercise',
+            Icons.fitness_center,
+            false,
+          ), // Light Card
+          _buildCategoryCard('Learning', Icons.menu_book, false),
+          _buildCategoryCard('Rest', Icons.bedtime, false),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildCategoryCard(String title, IconData icon, bool isDark) {
+    return Container(
+      decoration: BoxDecoration(
+        color: isDark ? const Color(0xFF2D503C) : Colors.white.withOpacity(0.5),
+        borderRadius: BorderRadius.circular(20),
+      ),
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Icon(
+            icon,
+            size: 50,
+            color: isDark ? Colors.white : const Color(0xFF2D503C),
+          ),
+          const SizedBox(height: 10),
+          Text(
+            title,
+            style: TextStyle(
+              color: isDark ? Colors.white : const Color(0xFF2D503C),
+              fontWeight: FontWeight.bold,
+              fontSize: 16,
+            ),
+          ),
+        ],
       ),
     );
   }
