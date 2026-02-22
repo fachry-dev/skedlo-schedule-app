@@ -213,7 +213,6 @@ class _ScheduleDetailScreenState extends State<ScheduleDetailScreen> {
                 onPressed: isDone
                     ? null
                     : () async {
-                        // Update status di Provider/Firebase
                         await scheduleProvider.toggleCompletion(
                           widget.schedule.id,
                           true,

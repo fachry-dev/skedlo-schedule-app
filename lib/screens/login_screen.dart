@@ -24,10 +24,10 @@ class _LoginScreenState extends State<LoginScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFFCAD7CD), // Sage Green Light
+      backgroundColor: const Color(0xFFCAD7CD), 
       body: SafeArea(
         bottom: false,
-        child: SingleChildScrollView( // Mencegah overflow saat keyboard muncul
+        child: SingleChildScrollView(
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
@@ -49,7 +49,6 @@ class _LoginScreenState extends State<LoginScreen> {
                       ),
                     ),
                     const SizedBox(height: 20),
-                    // ILUSTRASI (Gunakan Icon Besar jika tidak ada asset gambar)
                     const Center(
                       child: Icon(
                         Icons.shield_outlined,
@@ -66,7 +65,7 @@ class _LoginScreenState extends State<LoginScreen> {
                   minHeight: MediaQuery.of(context).size.height * 0.6,
                 ),
                 decoration: const BoxDecoration(
-                  color: Color(0xFF2D503C), // Dark Green
+                  color: Color(0xFF2D503C),
                   borderRadius: BorderRadius.only(
                     topLeft: Radius.circular(50),
                     topRight: Radius.circular(50),
