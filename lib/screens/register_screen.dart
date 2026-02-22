@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../providers/auth_provider.dart';
-import 'login_screen.dart';
 
 class RegisterScreen extends StatefulWidget {
   const RegisterScreen({super.key});
@@ -21,32 +20,46 @@ class _RegisterScreenState extends State<RegisterScreen> {
       backgroundColor: const Color(0xFFCAD7CD),
       body: SafeArea(
         bottom: false,
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 30, vertical: 40),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: const [
-                  Text(
-                    'Halo!',
-                    style: TextStyle(fontSize: 18, color: Color(0xFF2D503C)),
-                  ),
-                  Text(
-                    'Create New Account',
-                    style: TextStyle(
-                      fontSize: 28,
-                      fontWeight: FontWeight.bold,
-                      color: Color(0xFF2D503C),
+        child: SingleChildScrollView(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Padding(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 30,
+                  vertical: 30,
+                ),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    IconButton(
+                      icon: const Icon(
+                        Icons.arrow_back_ios,
+                        color: Color(0xFF2D503C),
+                      ),
+                      onPressed: () => Navigator.pop(context),
                     ),
-                  ),
-                ],
+                    const SizedBox(height: 10),
+                    const Text(
+                      'Halo!',
+                      style: TextStyle(fontSize: 16, color: Color(0xFF2D503C)),
+                    ),
+                    const Text(
+                      'Create Account',
+                      style: TextStyle(
+                        fontSize: 26,
+                        fontWeight: FontWeight.bold,
+                        color: Color(0xFF2D503C),
+                      ),
+                    ),
+                  ],
+                ),
               ),
-            ),
-            Expanded(
-              child: Container(
+              Container(
                 width: double.infinity,
+                constraints: BoxConstraints(
+                  minHeight: MediaQuery.of(context).size.height * 0.7,
+                ),
                 decoration: const BoxDecoration(
                   color: Color(0xFF2D503C),
                   borderRadius: BorderRadius.only(
@@ -55,99 +68,89 @@ class _RegisterScreenState extends State<RegisterScreen> {
                   ),
                 ),
                 padding: const EdgeInsets.all(30),
-                child: SingleChildScrollView(
-                  child: Column(
-                    children: [
-                      _buildRegisterField(
-                        label: 'nama',
-                        hint: 'masukkan nama lengkap',
-                        icon: Icons.person_outline,
-                        controller: _nameController,
+                child: Column(
+                  children: [
+                    const SizedBox(height: 10),
+                    _buildRegisterField(
+                      label: 'nama',
+                      hint: 'Masukkan nama lengkap',
+                      icon: Icons.person,
+                      controller: _nameController,
+                    ),
+                    const SizedBox(height: 20),
+                    _buildRegisterField(
+                      label: 'email',
+                      hint: 'email@contoh.com',
+                      icon: Icons.email,
+                      controller: _emailController,
+                    ),
+                    const SizedBox(height: 20),
+                    _buildRegisterField(
+                      label: 'password',
+                      hint: '*********',
+                      icon: Icons.lock,
+                      controller: _passwordController,
+                      isPassword: true,
+                    ),
+                    const SizedBox(height: 40),
+                    _buildActionButton(context),
+                    TextButton(
+                      onPressed: () => Navigator.pop(context),
+                      child: const Text(
+                        "Sudah punya akun? Login di sini",
+                        style: TextStyle(color: Color(0xFFCAD7CD)),
                       ),
-                      const SizedBox(height: 20),
-                      _buildRegisterField(
-                        label: 'email',
-                        hint: 'email@contoh.com',
-                        icon: Icons.email_outlined,
-                        controller: _emailController,
-                      ),
-                      const SizedBox(height: 20),
-                      _buildRegisterField(
-                        label: 'password',
-                        hint: '*********',
-                        icon: Icons.lock_outline,
-                        controller: _passwordController,
-                        isPassword: true,
-                      ),
-                      SConfirmButton(
-                        title: context.watch<AuthProvider>().isLoading
-                            ? 'Mendaftarkan...'
-                            : 'Register',
-                        onPressed: context.watch<AuthProvider>().isLoading
-                            ? () {}
-                            : () async {
-                                final name = _nameController.text.trim();
-                                final email = _emailController.text.trim();
-                                final password = _passwordController.text
-                                    .trim();
-
-                                if (name.isEmpty ||
-                                    email.isEmpty ||
-                                    password.isEmpty) {
-                                  ScaffoldMessenger.of(context).showSnackBar(
-                                    const SnackBar(
-                                      content: Text("Semua kolom harus diisi"),
-                                    ),
-                                  );
-                                  return;
-                                }
-
-                                try {
-                                  await context.read<AuthProvider>().signUp(
-                                    email: _emailController.text.trim(),
-                                    password: _passwordController.text.trim(),
-                                    name: _nameController.text.trim(),
-                                  );
-
-                                  if (mounted) {
-                                    ScaffoldMessenger.of(context).showSnackBar(
-                                      const SnackBar(
-                                        content: Text(
-                                          "Registrasi Berhasil! Anda otomatis login.",
-                                        ),
-                                        backgroundColor: Colors.green,
-                                      ),
-                                    );
-
-                                    Navigator.pushReplacementNamed(
-                                      context,
-                                      '/home',
-                                    );
-                                  }
-                                } catch (e) {
-                                  if (mounted) {
-                                    ScaffoldMessenger.of(context).showSnackBar(
-                                      SnackBar(
-                                        content: Text("Registrasi Gagal: $e"),
-                                      ),
-                                    );
-                                  }
-                                }
-                              },
-                      ),
-                      TextButton(
-                        onPressed: () => Navigator.pop(context),
-                        child: const Text(
-                          "Sudah punya akun? Login",
-                          style: TextStyle(color: Color(0xFFCAD7CD)),
-                        ),
-                      ),
-                    ],
-                  ),
+                    ),
+                  ],
                 ),
               ),
-            ),
-          ],
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildActionButton(BuildContext context) {
+    final auth = context.watch<AuthProvider>();
+    return SizedBox(
+      width: double.infinity,
+      height: 55,
+      child: ElevatedButton(
+        style: ElevatedButton.styleFrom(
+          backgroundColor: const Color(0xFFCAD7CD),
+          foregroundColor: const Color(0xFF2D503C),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(15),
+          ),
+        ),
+        onPressed: auth.isLoading
+            ? null
+            : () async {
+                if (_nameController.text.isEmpty ||
+                    _emailController.text.isEmpty ||
+                    _passwordController.text.isEmpty) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(content: Text("Semua kolom harus diisi")),
+                  );
+                  return;
+                }
+                try {
+                  await context.read<AuthProvider>().signUp(
+                    email: _emailController.text.trim(),
+                    password: _passwordController.text.trim(),
+                    name: _nameController.text.trim(),
+                  );
+                  if (mounted) Navigator.pushReplacementNamed(context, '/home');
+                } catch (e) {
+                  ScaffoldMessenger.of(
+                    context,
+                  ).showSnackBar(SnackBar(content: Text("Gagal: $e")));
+                }
+              },
+        child: Text(
+          auth.isLoading ? 'Mendaftarkan...' : 'Register',
+          style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 18),
         ),
       ),
     );
@@ -163,16 +166,23 @@ class _RegisterScreenState extends State<RegisterScreen> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(label, style: const TextStyle(color: Colors.white, fontSize: 14)),
-        const SizedBox(height: 8),
+        Padding(
+          padding: const EdgeInsets.only(left: 4, bottom: 8),
+          child: Text(
+            label,
+            style: const TextStyle(color: Colors.white, fontSize: 14),
+          ),
+        ),
         TextField(
           controller: controller,
           obscureText: isPassword,
+          style: const TextStyle(color: Color(0xFF2D503C)),
           decoration: InputDecoration(
             hintText: hint,
+            hintStyle: const TextStyle(color: Colors.black26),
             prefixIcon: Icon(icon, color: const Color(0xFF2D503C)),
             filled: true,
-            fillColor: const Color(0xFFCAD7CD),
+            fillColor: const Color(0xFFCAD7CD).withOpacity(0.9),
             border: OutlineInputBorder(
               borderRadius: BorderRadius.circular(15),
               borderSide: BorderSide.none,

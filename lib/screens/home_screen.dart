@@ -204,7 +204,6 @@ class _HomeScreenState extends State<HomeScreen> {
             ],
           ),
           const SizedBox(width: 16),
-          // Kolom Kanan: Card Konten
           Expanded(
             child: GestureDetector(
               onTap: () {
