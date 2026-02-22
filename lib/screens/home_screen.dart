@@ -8,6 +8,9 @@ import '../models/schedule_model.dart';
 import 'add_schedule_screen.dart';
 import 'schedule_detail_screen.dart';
 import 'profile_screen.dart';
+import 'agenda_screen.dart';
+import 'task_screen.dart';
+
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -160,9 +163,13 @@ class _HomeScreenState extends State<HomeScreen> {
           mainAxisAlignment: MainAxisAlignment.spaceAround,
           children: [
             _buildNavItem(Icons.home, 'Home', true, () {}),
-            _buildNavItem(Icons.calendar_month, 'Agenda', false, () {}),
+            _buildNavItem(Icons.calendar_month, 'Agenda', false, () {
+              Navigator.push(context, MaterialPageRoute(builder: (context) => const AgendaScreen()));
+            }),
             const SizedBox(width: 40),
-            _buildNavItem(Icons.assignment, 'Task', false, () {}),
+            _buildNavItem(Icons.assignment, 'Task', false, () {
+        Navigator.push(context, MaterialPageRoute(builder: (context) => const TaskScreen()));
+      }),
             _buildNavItem(Icons.person, 'Profile', false, () {
               Navigator.push(
                 context,
@@ -174,6 +181,53 @@ class _HomeScreenState extends State<HomeScreen> {
       ),
     );
   }
+
+
+Widget _buildCategoryCard(String title, IconData icon, bool isDark) {
+  return AnimatedContainer(
+    duration: const Duration(milliseconds: 300),
+    decoration: BoxDecoration(
+      color: isDark ? const Color(0xFF2D503C) : Colors.white.withOpacity(0.7),
+      borderRadius: BorderRadius.circular(24), // Sudut lebih bulat
+      boxShadow: [
+        BoxShadow(
+          color: Colors.black.withOpacity(0.05),
+          blurRadius: 20,
+          offset: const Offset(0, 10),
+        ),
+      ],
+    ),
+    child: Material(
+      color: Colors.transparent,
+      child: InkWell(
+        borderRadius: BorderRadius.circular(24),
+        onTap: () {}, 
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Container(
+              padding: const EdgeInsets.all(12),
+              decoration: BoxDecoration(
+                color: isDark ? Colors.white.withOpacity(0.1) : const Color(0xFF2D503C).withOpacity(0.1),
+                shape: BoxShape.circle,
+              ),
+              child: Icon(icon, size: 32, color: isDark ? Colors.white : const Color(0xFF2D503C)),
+            ),
+            const SizedBox(height: 12),
+            Text(
+              title,
+              style: TextStyle(
+                color: isDark ? Colors.white : const Color(0xFF2D503C),
+                fontWeight: FontWeight.w600,
+                fontSize: 16,
+              ),
+            ),
+          ],
+        ),
+      ),
+    ),
+  );
+}
 
   Widget _buildTimelineScheduleCard(
     Schedule schedule,

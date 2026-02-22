@@ -11,6 +11,8 @@ import 'providers/auth_provider.dart';
 import 'screens/home_screen.dart';
 import 'screens/login_screen.dart';
 import 'splash/splash_screen.dart';
+import 'screens/agenda_screen.dart';
+import 'screens/task_screen.dart';
 // import 'screens/profile_screen.dart';
 
 void main() async {
